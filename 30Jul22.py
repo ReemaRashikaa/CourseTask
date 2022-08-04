@@ -17,7 +17,7 @@ print('\n Weekly Average Rating')
 print(WAR)
 
 # Total Working Day for Each Agent
-TWD = pd.DataFrame(df2[(df2['Total Chats'] > 0)]['Agent Name'].value_counts())
+TWD = df2[(df2['Total Chats'] > 0)][['Agent Name','Date']].groupby(['Agent Name'])['Date'].count().to_frame().reset_index()
 print('\n Total Working Days')
 print(TWD)
 
@@ -119,7 +119,16 @@ df1.rename(columns={'Duration_x': 'Duration', 'Duration_y': 'Total Duration', 'M
 td = df1['Total Duration'].dt.components
 
 # Computing the Active Hours Percentage
-df1['ActiveHours %'] = (((td.days*24) + td.hours + (td.minutes/60) + (td.seconds/3600))*100)/207
-AHP = pd.DataFrame(df1[['Agent', 'ActiveHours %']].drop_duplicates())
+df2.rename(columns={'Agent Name':'Agent'},inplace=True)
+TWD1 = df2[(df2['Total Chats'] > 0)][['Agent','Date']].groupby(['Agent'])['Date'].count().to_frame().reset_index()
+df1 = pd.merge(TWD1,df1,on='Agent',how='inner')
+df1.rename(columns={'Date_x':'TWD','Date_y':'Date'},inplace=True)
+df1['ActiveHours'] = ((td.days*24) + td.hours + (td.minutes/60) + (td.seconds/3600))
+
+""" Considering 9 hours of work a day """
+df1['TWH'] = ((df1['TWD'])*9)
+df1['ActiveHours %'] = (((df1['ActiveHours'])*100)/df1['TWH'])
+AHP = pd.DataFrame(df1.groupby(['Agent'],sort=True)['ActiveHours %'].mean())
 print('\n Active Hour Percentage of Agents')
 print(AHP)
+
