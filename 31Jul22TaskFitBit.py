@@ -2,6 +2,8 @@ import pandas as pd
 import sqlalchemy as db
 import pymongo
 import json
+from sqlalchemy import text
+import sqlparse
 
 pd.set_option('display.max_rows', 3000)
 pd.set_option('display.max_columns', 1000)
@@ -43,11 +45,17 @@ collection.insert_one(file1)
 df1['ActivityDate'] = pd.to_datetime(df1['ActivityDate'])
 print("\n Data Type of ActivityDate", df1['ActivityDate'].dtype)
 # Converting ActivityDate toDate format in MySQL
-q0 = """SET SQL_SAFE_UPDATES = 0;
-update tracker set ActivityDate = str_to_date(ActivityDate, ('%m/%d/%Y'));
-Alter table tracker modify column ActivityDate date ; """
 
-print("\n  SQL query to convert Data Type of ActivityDate :", q0)
+query = """
+SET SQL_SAFE_UPDATES = 0;
+update tracker set ActivityDate = str_to_date(ActivityDate, '%m/%d/%Y');
+Alter table tracker modify column ActivityDate date ;
+Select ActivityDate from tracker;
+"""
+s = sqlparse.split(sqlparse.format(query, strip_comments=True))
+for q in s:
+    result = c.execute(text(q))
+print('Converted Activity Date to date type : ', result)
 
 # Find out the number of unique ID's in this dataset using Pandas
 a = df1['Id'].nunique()
