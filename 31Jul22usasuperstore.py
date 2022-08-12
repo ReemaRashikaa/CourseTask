@@ -7,10 +7,9 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
 # Creating MySQL connection
-engine = db.create_engine("mysql+pymysql://root:User21@localhost:3306")
+engine = db.create_engine("mysql+pymysql://root:User21@localhost:3306/ss_usa?", pool_pre_ping=True, pool_size=5, pool_recycle=3600)
 c = engine.connect()
-c.execute("create database if not exists ss_usa")
-c.execute("use ss_usa")
+
 # Reading the Excel Files
 t1 = pd.ExcelFile("Superstore_USA.xlsx")
 
